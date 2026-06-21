@@ -1,5 +1,5 @@
 import { parseAAMVABarcode } from './barcodeParser';
-import { parsePassportMRZ } from './passportParser'; // Import the new module
+import { parsePassportMRZ } from './passportParser'; 
 import { type ParsedIDData } from '../types/document';
 
 export interface UnifiedScanResult {
@@ -16,7 +16,6 @@ export function routeAndParseDocument(rawText: string): UnifiedScanResult {
     return { success: false, documentType: 'Unknown', data: null, error: 'Empty payload.' };
   }
 
-  // 1. ROUTE TO AAMVA BARCODE PARSER
   if (cleanText.startsWith('@') && cleanText.includes('ANSI')) {
     try {
       const parsedData = parseAAMVABarcode(cleanText);
@@ -26,8 +25,6 @@ export function routeAndParseDocument(rawText: string): UnifiedScanResult {
     }
   }
 
-  // 2. ROUTE TO GLOBAL PASSPORT MRZ PARSER
-  // Cleans strings to check if line starts with 'P<' or has a clear passport string footprint
   const lines = cleanText.split(/[\r\n]+/).map(l => l.trim());
   const firstLine = lines[0] || '';
   

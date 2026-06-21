@@ -8,8 +8,6 @@ function App() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedIDData | null>(null);
   const [scanStatus, setScanStatus] = useState<string>('');
-  
-  // New States to control popup visibility and layout type tracker
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [activeDocType, setActiveDocType] = useState<'Driver License / ID' | 'Passport' | 'Unknown'>('Unknown');
   
@@ -53,11 +51,11 @@ function App() {
           setParsedData(routingResult.data);
           setActiveDocType(routingResult.documentType);
           setScanStatus(`✓ ${routingResult.documentType} processed successfully via Barcode!`);
-          setIsPopupOpen(true); // Open the modal automatically on success!
+          setIsPopupOpen(true); 
           return; 
         }
 } catch (barcodeErr) {
-        // ENGINE LAYER B: Run OCR text fallback loop
+
         setScanStatus('No barcode detected. Running Optical Character Recognition (OCR)...');
         
         const Tesseract = await import('tesseract.js');
@@ -66,22 +64,18 @@ function App() {
         
         console.log("--- OCR RAW TEXT DETECTED --- \n", extractedText);
 
-        // Advanced string preprocessing pipeline
         const cleanLines = extractedText
           .split(/[\r\n]+/)
           .map(line => line.trim().toUpperCase())
-          // Replace common shape-based reading mistakes to preserve the arrows
           .map(line => line.replace(/[{}]/g, '<').replace(/\(/g, '<').replace(/\)/g, '<'))
-          // Remove internal single empty space blocks that throw off positional offsets
           .map(line => line.replace(/\s+/g, ''))
-          .filter(line => line.length >= 25); // preserve smaller line configurations if read cleanly
+          .filter(line => line.length >= 25); 
 
         let passportLine1 = '';
         let passportLine2 = '';
 
         for (let i = 0; i < cleanLines.length; i++) {
           const currentLine = cleanLines[i];
-          // Look for line starting with P followed by character tokens or standard format arrows
           if (currentLine.startsWith('P<') || /^P[A-Z<]{3,5}/.test(currentLine)) {
             passportLine1 = currentLine;
             if (cleanLines[i + 1]) {
@@ -92,7 +86,6 @@ function App() {
         }
 
         if (passportLine1 && passportLine2) {
-          // Send raw lines combined straight to the router
           const reconstructedMRZ = `${passportLine1}\n${passportLine2}`;
           const routingResult = routeAndParseDocument(reconstructedMRZ);
 

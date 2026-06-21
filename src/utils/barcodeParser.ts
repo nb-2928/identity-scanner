@@ -1,17 +1,12 @@
 import { type ParsedIDData } from '../types/document';
-/**
- * Normalizes AAMVA date fields into a clean YYYY-MM-DD format.
- * Dynamically detects if the 4-digit year is at the front or the back.
- */
+
 function normalizeAAMVADate(rawDate: string): string {
   const cleanStr = rawDate.trim();
   if (cleanStr.length !== 8) return cleanStr;
 
-  // Check if first 4 characters represent a valid year block
   if (parseInt(cleanStr.substring(0, 4)) > 1900) {
     return `${cleanStr.substring(0, 4)}-${cleanStr.substring(4, 6)}-${cleanStr.substring(6, 8)}`;
   } 
-  // Otherwise, safely assume the year is positioned at the trailing end
   else {
     return `${cleanStr.substring(4, 8)}-${cleanStr.substring(0, 2)}-${cleanStr.substring(2, 4)}`;
   }
@@ -37,7 +32,7 @@ export function parseAAMVABarcode(rawText: string): ParsedIDData {
     eyeColor: 'Unknown'
   };
 
-  // 1. Extract Name Fields
+  //Extract Name Fields
   const lastNameMatch = rawText.match(/DCS([^\n\r]+)/) || rawText.match(/DAB([^\n\r]+)/);
   if (lastNameMatch) data.lastName = lastNameMatch[1].trim();
 
@@ -57,14 +52,14 @@ export function parseAAMVABarcode(rawText: string): ParsedIDData {
     }
   }
 
-  // 2. Extract Date Fields via the normalization helper
+  //Extract Date Fields via the normalization helper
   const dobMatch = rawText.match(/DBB([^\n\r]+)/);
   if (dobMatch) data.dob = normalizeAAMVADate(dobMatch[1]);
 
   const expMatch = rawText.match(/DBA([^\n\r]+)/);
   if (expMatch) data.expirationDate = normalizeAAMVADate(expMatch[1]);
 
-  // 3. Extract Gender (DBC)
+  //Extract Gender
   const genderMatch = rawText.match(/DBC([^\n\r]+)/);
   if (genderMatch) {
     const val = genderMatch[1].trim();
@@ -73,7 +68,7 @@ export function parseAAMVABarcode(rawText: string): ParsedIDData {
     else data.gender = val;
   }
 
-  // 4. Extract Identity & Physical Fields
+  //Extract Identity & Physical Fields
   const idMatch = rawText.match(/DAQ([^\n\r]+)/);
   if (idMatch) data.licenseNumber = idMatch[1].trim();
 
@@ -83,7 +78,7 @@ export function parseAAMVABarcode(rawText: string): ParsedIDData {
   const eyeMatch = rawText.match(/DAY([^\n\r]+)/);
   if (eyeMatch) data.eyeColor = eyeMatch[1].trim();
 
-  // 5. Extract Address Segments
+  //Extract Address Segments
   const streetMatch = rawText.match(/DAG([^\n\r]+)/);
   if (streetMatch) data.addressStreet = streetMatch[1].trim();
 
